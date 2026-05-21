@@ -1,7 +1,7 @@
 import streamlit as st
-import streamlit.components.v1 as components
 from yt_sub_app import extract_video_id, get_english_subtitles
 import json
+import urllib.parse
 
 st.title("Get&Copy YouTube English Subtitles")
 
@@ -36,46 +36,62 @@ if st.session_state.get("subtitles"):
     subtitles = st.session_state["subtitles"]
     safe_subtitles = json.dumps(subtitles)
 
+    html_code = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <style>
+            body {{
+                margin: 0;
+                background-color: transparent;
+            }}
+
+            .copy-button {{
+                height: 38px;
+                padding: 0 16px;
+                border-radius: 8px;
+                border: 1px solid rgba(250, 250, 250, 0.2);
+                background-color: #0e1117;
+                color: white;
+                cursor: pointer;
+                font-size: 14px;
+                margin-top: -6px;
+            }}
+
+            .copy-button:hover {{
+                border-color: rgba(250, 250, 250, 0.4);
+            }}
+
+            .copy-button.copied {{
+                box-shadow: 0 0 14px #4ade80;
+                border-color: #4ade80;
+            }}
+        </style>
+    </head>
+    <body>
+        <button id="copyBtn" class="copy-button">
+            Copy subtitles
+        </button>
+
+        <script>
+            const btn = document.getElementById("copyBtn");
+
+            btn.onclick = function() {{
+                navigator.clipboard.writeText({safe_subtitles});
+                btn.classList.add("copied");
+
+                setTimeout(function() {{
+                    btn.classList.remove("copied");
+                }}, 500);
+            }};
+        </script>
+    </body>
+    </html>
+    """
+
+    html_url = "data:text/html;charset=utf-8," + urllib.parse.quote(html_code)
+
     with copy_placeholder:
-        components.html(
-            f"""
-            <style>
-                .copy-button {{
-                    height: 38px;
-                    padding: 0 16px;
-                    border-radius: 8px;
-                    border: 1px solid rgba(250, 250, 250, 0.2);
-                    background-color: #0e1117;
-                    color: white;
-                    cursor: pointer;
-                    font-size: 14px;
-                    margin-top: -6px;
-                }}
-
-                .copy-button.copied {{
-                    box-shadow: 0 0 14px #4ade80;
-                    border-color: #4ade80;
-                }}
-            </style>
-
-            <button id="copyBtn" class="copy-button">
-                Copy subtitles
-            </button>
-
-            <script>
-                const btn = document.getElementById("copyBtn");
-
-                btn.onclick = function() {{
-                    navigator.clipboard.writeText({safe_subtitles});
-                    btn.classList.add("copied");
-
-                    setTimeout(function() {{
-                        btn.classList.remove("copied");
-                    }}, 500);
-                }};
-            </script>
-            """,
-            height=45,
-        )
+        st.iframe(html_url, height=45)
 
     st.text_area("Subtitles", subtitles, height=400)
