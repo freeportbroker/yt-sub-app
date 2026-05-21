@@ -55,7 +55,7 @@ if st.session_state.get("subtitles"):
                 color: white;
                 cursor: pointer;
                 font-size: 14px;
-                margin-top: -6px;
+                margin-top: 0px;
             }}
 
             .copy-button:hover {{
